@@ -16,8 +16,20 @@
  (reel)
  (let [store (:store reel)
        states (:states store)
-       items [{:type :input, :label "Name", :name :name, :placeholder "a name"}]]
+       items [{:type :input,
+               :label "Name",
+               :name :name,
+               :required? true,
+               :placeholder "a name"}
+              {:type :input, :label "Place", :name :place, :placeholder "a name"}]]
    (div
     {:style (merge ui/global ui/row)}
-    (comp-form items {} (fn [form] (println "form" form)) (fn [] (println "cancel")))
+    (cursor->
+     :form-example
+     comp-form
+     states
+     items
+     {}
+     (fn [form] (println "form" form))
+     {:on-cancel (fn [] (println "cancel"))})
     (when dev? (cursor-> :reel comp-reel states reel {})))))
