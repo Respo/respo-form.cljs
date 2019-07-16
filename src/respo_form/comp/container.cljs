@@ -4,30 +4,32 @@
             [respo-ui.core :as ui]
             [respo.core
              :refer
-             [defcomp cursor-> action-> mutation-> <> div button textarea span input]]
+             [defcomp cursor-> action-> <> div button textarea span input]]
             [respo.comp.space :refer [=<]]
             [reel.comp.reel :refer [comp-reel]]
             [respo-md.comp.md :refer [comp-md]]
-            [respo-form.config :refer [dev?]]))
+            [respo-form.config :refer [dev?]]
+            [respo-form.core :refer [comp-form]]))
 
 (defcomp
  comp-container
  (reel)
- (let [store (:store reel), states (:states store)]
+ (let [store (:store reel)
+       states (:states store)
+       items [{:type :input,
+               :label "Name",
+               :name :name,
+               :required? true,
+               :placeholder "a name"}
+              {:type :input, :label "Place", :name :place, :placeholder "a name"}]]
    (div
     {:style (merge ui/global ui/row)}
-    (textarea
-     {:value (:content store),
-      :placeholder "Content",
-      :style (merge ui/expand ui/textarea {:height 320}),
-      :on-input (action-> :content (:value %e))})
-    (=< "8px" nil)
-    (div
-     {:style ui/expand}
-     (comp-md "This is some content with `code`")
-     (=< "8px" nil)
-     (button
-      {:style ui/button,
-       :inner-text (str "run"),
-       :on-click (fn [e d! m!] (println (:content store)))}))
+    (cursor->
+     :form-example
+     comp-form
+     states
+     items
+     {}
+     (fn [form] (println "form" form))
+     {:on-cancel (fn [] (println "cancel"))})
     (when dev? (cursor-> :reel comp-reel states reel {})))))
