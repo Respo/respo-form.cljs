@@ -21,7 +21,17 @@
                :name :name,
                :required? true,
                :placeholder "a name"}
-              {:type :input, :label "Place", :name :place, :placeholder "a name"}]]
+              {:type :input, :label "Place", :name :place, :placeholder "a name"}
+              {:type :custom,
+               :name :custom,
+               :label "Counter",
+               :render (fn [value item modify-form! state]
+                 (div
+                  {:style {:cursor :pointer,
+                           :padding "0px 8px",
+                           :background-color (hsl 0 0 90)},
+                   :on-click (fn [e d! m!] (modify-form! m! {(:name item) (inc value)}))}
+                  (<> (or value 0))))}]]
    (div
     {:style (merge ui/global ui/row)}
     (cursor->
