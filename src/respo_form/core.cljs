@@ -2,7 +2,8 @@
 (ns respo-form.core
   (:require [respo.core :refer [defcomp cursor-> list-> <> div button textarea span input]]
             [respo-ui.core :as ui]
-            [respo.comp.space :refer [=<]])
+            [respo.comp.space :refer [=<]]
+            [respo-alerts.comp.alerts :refer [comp-select]])
   (:require-macros [clojure.core.strint :refer [<<]]))
 
 (defn render-custom [state item modify-form!]
@@ -14,16 +15,29 @@
    {:style ui/input,
     :placeholder (:placeholder item),
     :value value,
-    :on-input (fn [e d! m!] (modify-form! m! {:name item, :value e}))}))
+    :on-input (fn [e d! m!] (modify-form! m! {(:name item) (:value e)}))}))
 
 (defn render-label [item]
   (div {:style {:width 100}} (<> (:label item)) (if (:required? item) (<> "*" {}))))
+
+(defn render-select-popup [states %cursor value item modify-form!]
+  (let [options (->> (:options item)
+                     (map (fn [option] {:value (:value option), :display (:title option)})))]
+    (cursor->
+     (:name item)
+     comp-select
+     states
+     value
+     options
+     {}
+     (fn [result d! m!] (modify-form! m! {(:name item) result})))))
 
 (defcomp
  comp-form
  (states items form0 on-change options)
  (let [state (or (:data states) form0)
-       modify-form! (fn [m! pairs] (let [new-form (merge state pairs)] (m! new-form)))]
+       modify-form! (fn [m! pairs]
+                      (let [new-form (merge state pairs)] (m! %cursor new-form)))]
    (div
     {}
     (list->
@@ -37,6 +51,13 @@
                (render-label item)
                (case (:type item)
                  :input (render-input (get state (:name item)) item modify-form!)
+                 :select-popup
+                   (render-select-popup
+                    states
+                    %cursor
+                    (get state (:name item))
+                    item
+                    modify-form!)
                  :custom (render-custom state item modify-form!)
                  (<> (<< "Unknown type ~(pr-str (:type item))"))))]))))
     (div
