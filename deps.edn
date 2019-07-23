@@ -1,0 +1,2 @@
+{:path "src"
+ :deps {respo/alerts {:mvn/version "0.3.12"}}}
