@@ -2,9 +2,7 @@
 (ns respo-form.comp.container
   (:require [hsl.core :refer [hsl]]
             [respo-ui.core :as ui]
-            [respo.core
-             :refer
-             [defcomp cursor-> action-> <> div button textarea span input]]
+            [respo.core :refer [defcomp >> <> div button textarea span input]]
             [respo.comp.space :refer [=<]]
             [reel.comp.reel :refer [comp-reel]]
             [respo-md.comp.md :refer [comp-md]]
@@ -26,7 +24,7 @@
     :render (fn [value item modify-form! state]
       (div
        {:style {:cursor :pointer, :padding "0px 8px", :background-color (hsl 0 0 90)},
-        :on-click (fn [e d! m!] (modify-form! m! {(:name item) (inc value)}))}
+        :on-click (fn [e d!] (modify-form! d! {(:name item) (inc value)}))}
        (<> (or value 0))))}])
 
 (defcomp
@@ -35,13 +33,11 @@
  (let [store (:store reel), states (:states store)]
    (div
     {:style (merge ui/global ui/row)}
-    (cursor->
-     :form-example
-     comp-form
-     states
+    (comp-form
+     (>> states :form-example)
      items
      {}
      (fn [form] (println "form" form))
      {:on-cancel (fn [] (println "cancel"))})
-    (when dev? (cursor-> :reel comp-reel states reel {}))
+    (when dev? (comp-reel (>> states :reel) reel {}))
     (when dev? (comp-inspect "Store" store {:bottom 8})))))

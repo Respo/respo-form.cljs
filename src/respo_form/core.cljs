@@ -1,9 +1,9 @@
 
 (ns respo-form.core
-  (:require [respo.core :refer [defcomp cursor-> list-> <> div button textarea span input]]
+  (:require [respo.core :refer [defcomp >> list-> <> div button textarea span input]]
             [respo-ui.core :as ui]
             [respo.comp.space :refer [=<]]
-            [respo-alerts.comp.alerts :refer [comp-select]])
+            [respo-alerts.core :refer [comp-select]])
   (:require-macros [clojure.core.strint :refer [<<]]))
 
 (defn render-custom [state item modify-form!]
@@ -15,29 +15,28 @@
    {:style ui/input,
     :placeholder (:placeholder item),
     :value value,
-    :on-input (fn [e d! m!] (modify-form! m! {(:name item) (:value e)}))}))
+    :on-input (fn [e d!] (modify-form! d! {(:name item) (:value e)}))}))
 
 (defn render-label [item]
   (div {:style {:width 100}} (<> (:label item)) (if (:required? item) (<> "*" {}))))
 
-(defn render-select-popup [states %cursor value item modify-form!]
+(defn render-select-popup [states cursor value item modify-form!]
   (let [options (->> (:options item)
                      (map (fn [option] {:value (:value option), :display (:title option)})))]
-    (cursor->
-     (:name item)
-     comp-select
-     states
+    (comp-select
+     (>> states (:name item))
      value
      options
      {}
-     (fn [result d! m!] (modify-form! m! {(:name item) result})))))
+     (fn [result d!] (modify-form! d! {(:name item) result})))))
 
 (defcomp
  comp-form
  (states items form0 on-change options)
- (let [state (or (:data states) form0)
-       modify-form! (fn [m! pairs]
-                      (let [new-form (merge state pairs)] (m! %cursor new-form)))]
+ (let [cursor (:cursor states)
+       state (or (:data states) form0)
+       modify-form! (fn [d! pairs]
+                      (let [new-form (merge state pairs)] (d! cursor new-form)))]
    (div
     {}
     (list->
@@ -54,7 +53,7 @@
                  :select-popup
                    (render-select-popup
                     states
-                    %cursor
+                    cursor
                     (get state (:name item))
                     item
                     modify-form!)
@@ -63,9 +62,7 @@
     (div
      {:style ui/row-center}
      (button
-      {:style ui/button,
-       :inner-text "Cancel",
-       :on-click (fn [e d! m!] ((:on-cancel options)))})
+      {:style ui/button, :inner-text "Cancel", :on-click (fn [e d!] ((:on-cancel options)))})
      (=< 8 nil)
      (button
-      {:style ui/button, :inner-text "Submit", :on-click (fn [e d! m!] (on-change state))})))))
+      {:style ui/button, :inner-text "Submit", :on-click (fn [e d!] (on-change state))})))))

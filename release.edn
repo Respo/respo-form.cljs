@@ -1,0 +1,6 @@
+{:version "0.1.0-a1"
+ :group-id "respo"
+ :artifact-id "form"
+ :skip-tag true
+ :description "Form component designed for Respo."
+ :scm-url "https://github.com/Respo/form"}
